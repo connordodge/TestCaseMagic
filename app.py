@@ -1,12 +1,8 @@
 from flask import Flask
+from flask_restful import Api
 
 app = Flask(__name__)
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
+api = Api(app, catch_all_404s=True)
 
 if __name__ == '__main__':
     app.run()
