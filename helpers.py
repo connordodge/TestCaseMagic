@@ -1,3 +1,3 @@
 
 def id_is_valid(id):
-    raise NotImplementedError
+    return isinstance(id, int) and id > 0
