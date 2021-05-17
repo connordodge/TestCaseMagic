@@ -3,3 +3,4 @@ templates
 static
 .idea
 *.db
+__pycache__
