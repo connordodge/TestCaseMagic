@@ -1,7 +1,6 @@
 import unittest
 import helpers
 
-
 class TestIdIsValidHelper(unittest.TestCase):
 
     def test_id_is_valid_int(self):
