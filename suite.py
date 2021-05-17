@@ -1,15 +1,29 @@
+import json
+
+from flask import jsonify
 from flask_restful import Resource
+from helpers import id_is_valid
+from database import Database
+
+MAGIC_DB = "test_case_magic.db"
 
 
 class Suite(Resource):
 
-    def get(self):
-        # TODO: Validate id format
-        # TODO: connect to DB
-        # TODO: query for id
-        # TODO: either return id if found or return 404 if not found
-        # TODO: return object should include case name, description, and a list of case ids
-        return NotImplementedError
+    def get(self, suite_id):
+        if not id_is_valid(suite_id):
+            return {"message": "bad request"}, 400
+        db = Database(MAGIC_DB)
+        suite = db.get_suite(suite_id)
+        if len(suite) > 0:
+            return_suite = {
+                "suite_id": suite[0][0],
+                "name": suite[0][1],
+                "steps": json.loads(suite[0][2])
+            }
+            return jsonify(return_suite)
+        else:
+            return {"message": "Item not found"}, 404
 
     def post(self):
         # TODO: parse arguments
