@@ -22,8 +22,7 @@ class TestDatabase(unittest.TestCase):
         '''
         self.db.create_table('case_suite_relations', case_suite_relations_schema)
         test_case_steps = json.dumps(case_fixture_1)
-        test_case = ("login", test_case_steps)
-        self.db.insert_case(test_case)
+        self.db.insert_case("login", test_case_steps)
         self.db.insert_suite("regression suite")
         # self.db.add_or_update_cases_to_suite()
 
@@ -42,6 +41,10 @@ class TestDatabase(unittest.TestCase):
         res = self.db.execute(table_query)
         self.assertEqual(0, len(res), f"Expected list {res} to be empty")
 
+    def test_get_case(self):
+        rows = self.db.get_case(1)
+        self.assertEqual(1, len(rows), f"Expected 1 result, got {len(rows)} results")
+
     def test_insert_case(self):
         # case is already inserted in set up
         test_case_query = '''
@@ -51,6 +54,9 @@ class TestDatabase(unittest.TestCase):
         '''
         res = self.db.execute(test_case_query)
         self.assertEqual('login',res[0][1], f"Expected {res[0][1]} to equal 'login'")
+        test_case_steps = json.dumps(case_fixture_1)
+        id = self.db.insert_case("login", test_case_steps)
+        self.assertEqual(2, id, f"Expected id of 2 to be returned")
 
     def test_update_case(self):
         self.db.update_case(1, "sign in", json.dumps(case_fixture_2))
@@ -113,7 +119,7 @@ class TestDatabase(unittest.TestCase):
     def test_add_case_to_suite(self):
         test_case_steps = json.dumps(case_fixture_2)
         test_case = ("sign in", test_case_steps)
-        self.db.insert_case(test_case)
+        self.db.insert_case("sign in", test_case_steps)
         self.db.add_or_update_cases_to_suite([1,2],1)
         relations_query = '''
                             SELECT *
@@ -125,11 +131,9 @@ class TestDatabase(unittest.TestCase):
 
     def test_update_cases_in_suite(self):
         test_case_steps = json.dumps(case_fixture_2)
-        test_case = ("sign in", test_case_steps)
-        self.db.insert_case(test_case)
+        self.db.insert_case("sign in", test_case_steps)
         test_case_steps_2 = json.dumps(case_fixture_2)
-        test_case_2 = ("auth", test_case_steps_2)
-        self.db.insert_case(test_case_2)
+        self.db.insert_case("auth", test_case_steps_2)
         self.db.add_or_update_cases_to_suite([1, 2], 1)
         relations_query = '''
                             SELECT *

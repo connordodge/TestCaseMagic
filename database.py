@@ -33,13 +33,28 @@ class Database(Resource):
         connection.commit()
         connection.close()
 
-    def insert_case(self, data):
+    def get_case(self, case_id):
+        connection = self.connect_to_db()
+        cursor = connection.cursor()
+        get_case_query = '''
+            SELECT *
+            from cases
+            WHERE case_id = ?
+        '''
+        rows = cursor.execute(get_case_query, (case_id,)).fetchall()
+        connection.commit()
+        connection.close()
+        return rows
+
+    def insert_case(self, name, steps):
         connection = self.connect_to_db()
         cursor = connection.cursor()
         query = "INSERT INTO cases(name, steps) VALUES (?, ?)"
-        cursor.execute(query, data)
+        cursor.execute(query, (name, steps))
+        count = cursor.lastrowid
         connection.commit()
         connection.close()
+        return count
 
     def update_case(self, case_id, name, steps):
         connection = self.connect_to_db()
