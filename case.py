@@ -41,8 +41,8 @@ class Case(Resource):
         dictionary_steps = self.parse_steps(data['steps'])
         print(dictionary_steps)
         db = Database(MAGIC_DB)
-        id = db.insert_case(data['name'], json.dumps(dictionary_steps))
-        return_obj = {'case_id': id, 'name': data['name'], 'steps': dictionary_steps}
+        case_id = db.insert_case(data['name'], json.dumps(dictionary_steps))
+        return_obj = {'case_id': case_id, 'name': data['name'], 'steps': dictionary_steps}
         return_obj = jsonify(return_obj)
         return return_obj
 
