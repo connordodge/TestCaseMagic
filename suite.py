@@ -22,11 +22,11 @@ class Suite(Resource):
                         )
 
     def get(self, suite_id):
-        print("here")
         if not id_is_valid(suite_id):
             return {"message": "bad request"}, 400
         db = Database(MAGIC_DB)
         suite = db.get_suite(suite_id)
+        print(len(suite))
         if len(suite) > 0:
             return_suite = {
                 "suite_id": suite[0][0],
@@ -59,13 +59,12 @@ class Suite(Resource):
         return_obj = self.create_return_object(case_ids, data, suite_id)
         return return_obj
 
-    def delete(self):
-        # TODO: Validate id format
-        # TODO: Connect to DB
-        # TODO: query for id
-        # TODO: if id exists, delete test case from DB
-        # TODO: if not exists, return error
-        return NotImplementedError
+    def delete(self, suite_id):
+        if not id_is_valid(suite_id):
+            return {"message": "bad request"}, 400
+        db = Database(MAGIC_DB)
+        db.delete_suite(suite_id)
+        return 200
 
     def parse_case_ids(self, case_ids):
         int_ids = []

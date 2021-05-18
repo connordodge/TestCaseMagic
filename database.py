@@ -88,7 +88,8 @@ class Database(Resource):
             WHERE suite_id = ?
         '''
         suite_rows = cursor.execute(get_suite_query, (suite_id,)).fetchall()
-        print(suite_rows)
+        if len(suite_rows ) == 0:
+            return suite_rows
         get_suite_cases_query = '''
             SELECT *
             from case_suite_relations
