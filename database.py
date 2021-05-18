@@ -51,10 +51,10 @@ class Database(Resource):
         cursor = connection.cursor()
         query = "INSERT INTO cases(name, steps) VALUES (?, ?)"
         cursor.execute(query, (name, steps))
-        count = cursor.lastrowid
+        case_id = cursor.lastrowid
         connection.commit()
         connection.close()
-        return count
+        return case_id
 
     def update_case(self, case_id, name, steps):
         connection = self.connect_to_db()
@@ -79,13 +79,37 @@ class Database(Resource):
         connection.commit()
         connection.close()
 
+    def get_suite(self, suite_id):
+        connection = self.connect_to_db()
+        cursor = connection.cursor()
+        get_suite_query = '''
+            SELECT *
+            from suites
+            WHERE suite_id = ?
+        '''
+        suite_rows = cursor.execute(get_suite_query, (suite_id,)).fetchall()
+        if len(suite_rows ) == 0:
+            return suite_rows
+        get_suite_cases_query = '''
+            SELECT *
+            from case_suite_relations
+            WHERE suite_id = ?
+        '''
+        case_rows = cursor.execute(get_suite_cases_query, (suite_id,)).fetchall()
+        cases = self.order_cases(case_rows)
+        connection.commit()
+        connection.close()
+        return [(suite_rows[0][0], suite_rows[0][1], cases)]
+
     def insert_suite(self, suite_name):
         connection = self.connect_to_db()
         cursor = connection.cursor()
         query = "INSERT INTO suites (name) VALUES (?)"
         cursor.execute(query, (suite_name,))
+        suite_id = cursor.lastrowid
         connection.commit()
         connection.close()
+        return suite_id
 
     def update_suite(self, suite_id, suite_name):
         connection = self.connect_to_db()
@@ -125,13 +149,27 @@ class Database(Resource):
             SET suite_case_order = ?
             WHERE case_id = ? and suite_id = ?
         '''
+
+        delete_query = f'''
+            DELETE from case_suite_relations
+            WHERE suite_id = ? AND case_id NOT IN ({','.join(['?']*len(case_ids))})
+        '''
         connection = self.connect_to_db()
         cursor = connection.cursor()
 
         for index, case_id in enumerate(case_ids):
             try:
                 cursor.execute(add_query, (index+1, case_id, suite_id)) #index +1 is to account for 0 indexed
-            except Exception as e:
+            except Exception:
                 cursor.execute(update_query, (index+1, case_id, suite_id)) #index +1 is to account for zero indexed
+        print(case_ids)
+        cursor.execute(delete_query,(suite_id, *case_ids))
         connection.commit()
         connection.close()
+
+    def order_cases(self, cases_rows):
+        cases_rows.sort(key = lambda x: x[2])
+        cases = []
+        for case in cases_rows:
+            cases.append(case[0])
+        return cases

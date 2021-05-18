@@ -20,11 +20,11 @@ class Case(Resource):
                         location='json'
                         )
 
-    def get(self, id):
-        if not id_is_valid(id):
+    def get(self, case_id):
+        if not id_is_valid(case_id):
             return {"message": "bad request"}, 400
         db = Database(MAGIC_DB)
-        case = db.get_case(id)
+        case = db.get_case(case_id)
         if len(case) > 0:
 
             return_case = {
@@ -41,30 +41,30 @@ class Case(Resource):
         dictionary_steps = self.parse_steps(data['steps'])
         print(dictionary_steps)
         db = Database(MAGIC_DB)
-        id = db.insert_case(data['name'], json.dumps(dictionary_steps))
-        return_obj = {'case_id': id, 'name': data['name'], 'steps': dictionary_steps}
+        case_id = db.insert_case(data['name'], json.dumps(dictionary_steps))
+        return_obj = {'case_id': case_id, 'name': data['name'], 'steps': dictionary_steps}
         return_obj = jsonify(return_obj)
         return return_obj
 
-    def put(self, id):
-        if not id_is_valid(id):
+    def put(self, case_id):
+        if not id_is_valid(case_id):
             return {"message": "bad request"}, 400
         db = Database(MAGIC_DB)
-        case = db.get_case(id)
+        case = db.get_case(case_id)
         if len(case) > 0:
             data = Case.parser.parse_args()
             dictionary_steps = self.parse_steps(data['steps'])
             print(dictionary_steps)
-            db.update_case(id, data['name'], json.dumps(dictionary_steps))
+            db.update_case(case_id, data['name'], json.dumps(dictionary_steps))
             return 200
         else:
             return {"message": "Item not found"}, 404
 
-    def delete(self, id):
-        if not id_is_valid(id):
+    def delete(self, case_id):
+        if not id_is_valid(case_id):
             return {"message": "bad request"}, 400
         db = Database(MAGIC_DB)
-        db.delete_case(id)
+        db.delete_case(case_id)
         return 200
 
     def parse_steps(self, steps):
