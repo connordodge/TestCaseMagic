@@ -78,4 +78,29 @@ class Case(Resource):
             dictionary_steps.append(step)
         return dictionary_steps
 
+class MergeCases(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('ordered_case_ids',
+                        action='append',
+                        location='json'
+                        )
+    parser.add_argument('new_name',
+                        type=str,
+                        required=True,
+                        help="The test case needs a name"
+                        )
+
+    def put(self):
+        data = MergeCases.parser.parse_args()
+        case_id_1 = data['ordered_case_ids'][0]
+        case_id_2 = data['ordered_case_ids'][1]
+        db = Database(MAGIC_DB)
+        case_steps_1 = json.loads(db.get_case(case_id_1)[0][2])
+        case_steps_2 = json.loads(db.get_case(case_id_2)[0][2])
+        new_case_steps = case_steps_1 + case_steps_2
+        db.update_case(case_id_1, data["new_name"], json.dumps(new_case_steps))
+        db.merge_case_suite_relations_for_case_2_suites((case_id_1, case_id_2))
+        db.delete_case(case_id_2)
+#        I need to try and update both suites with the new case id, and just catch the error if it fails.
+
 
