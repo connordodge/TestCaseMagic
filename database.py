@@ -76,6 +76,11 @@ class Database(Resource):
             WHERE case_id = ?
         '''
         cursor.execute(delete_query, (case_id,))
+        delete_from_relations_table_query = '''
+            DELETE from case_suite_relations
+            WHERE case_id = ?
+        '''
+        cursor.execute(delete_from_relations_table_query, (case_id,))
         connection.commit()
         connection.close()
 
@@ -162,7 +167,6 @@ class Database(Resource):
                 cursor.execute(add_query, (index+1, case_id, suite_id)) #index +1 is to account for 0 indexed
             except Exception:
                 cursor.execute(update_query, (index+1, case_id, suite_id)) #index +1 is to account for zero indexed
-        print(case_ids)
         cursor.execute(delete_query,(suite_id, *case_ids))
         connection.commit()
         connection.close()
@@ -173,3 +177,30 @@ class Database(Resource):
         for case in cases_rows:
             cases.append(case[0])
         return cases
+
+    def merge_case_suite_relations_for_case_2_suites(self, case_ids):
+        get_all_suites_query = '''
+            SELECT * from case_suite_relations
+            WHERE case_id = ?
+        '''
+        update_query = '''
+            UPDATE case_suite_relations
+            SET case_id = ?
+            WHERE case_id = ? AND suite_id = ?
+        '''
+        delete_query = '''
+            DELETE from case_suite_relations
+            WHERE suite_id = ? AND case_id = ?
+        '''
+        connection = self.connect_to_db()
+        cursor = connection.cursor()
+        case_2_suites = cursor.execute(get_all_suites_query, (case_ids[1],)).fetchall()
+        print(case_2_suites)
+        case_2_suite_ids = [suite[1] for suite in case_2_suites]
+        for suite_id in case_2_suite_ids:
+            try:
+                cursor.execute(update_query, (case_ids[0], case_ids[1], suite_id))
+            except Exception:
+                cursor.execute(delete_query, (suite_id, case_ids[1]))
+        connection.commit()
+        connection.close()

@@ -15,9 +15,8 @@ class Suite(Resource):
                         required=True,
                         help="The suite needs a string name"
                         )
-    parser.add_argument('case_ids',
+    parser.add_argument('ordered_case_ids',
                         action='append',
-                        # type=list,
                         location='json'
                         )
 
@@ -26,7 +25,6 @@ class Suite(Resource):
             return {"message": "bad request"}, 400
         db = Database(MAGIC_DB)
         suite = db.get_suite(suite_id)
-        print(len(suite))
         if len(suite) > 0:
             return_suite = {
                 "suite_id": suite[0][0],
@@ -41,7 +39,7 @@ class Suite(Resource):
         data = Suite.parser.parse_args()
         db = Database(MAGIC_DB)
         suite_id = db.insert_suite(data['name'])
-        case_ids = self.parse_case_ids(data['case_ids'])
+        case_ids = self.parse_case_ids(data['ordered_case_ids'])
         db.add_or_update_cases_to_suite(case_ids, suite_id)
         return_obj = self.create_return_object(case_ids, data, suite_id)
         return return_obj
@@ -54,7 +52,7 @@ class Suite(Resource):
     def put(self, suite_id):
         data = Suite.parser.parse_args()
         db = Database(MAGIC_DB)
-        case_ids = self.parse_case_ids(data['case_ids'])
+        case_ids = self.parse_case_ids(data['ordered_case_ids'])
         db.add_or_update_cases_to_suite(case_ids, suite_id)
         return_obj = self.create_return_object(case_ids, data, suite_id)
         return return_obj
